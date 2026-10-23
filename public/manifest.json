@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "Your Academy — أكاديمية Your Academy",
+  "short_name": "Your Academy",
+  "description": "الموقع الرسمي لأكاديمية Your Academy - المقر الرئيسي بعين الدفلى وفروع البليدة وخميس مليانة - تعليم اللغات والدعم المدرسي.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0F17",
+  "theme_color": "#F7C62F",
+  "icons": [
+    {
+      "src": "/assets/your-academy-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/your-academy-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

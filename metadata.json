@@ -1,0 +1,8 @@
+{
+  "name": "Remix 1st Final Your Academy — أكاديمية Your Academy",
+  "description": "الموقع الرسمي لأكاديمية Your Academy في خميس مليانة، عين الدفلى - تعليم اللغات الحية (الإنجليزية، الفرنسية، الإسبانية، الألمانية) والدعم المدرسي للأقسام النهائية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
