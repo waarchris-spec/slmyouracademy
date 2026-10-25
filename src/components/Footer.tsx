@@ -6,6 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { BlurUpImage } from './BlurUpImage';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface FooterProps {
   onOpenRegister: () => void;
@@ -13,6 +14,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onOpenRegister }) => {
   const { t, language } = useLanguage();
+  const { isDark } = useTheme();
   const isAr = language === 'ar';
 
   return (
@@ -23,15 +25,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenRegister }) => {
           
           {/* Col 1: Brand & Slogan */}
           <div className="lg:col-span-5 space-y-4 text-start">
-            <Link to="/" className="flex items-center gap-3 inline-flex">
-              <div className="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center border border-amber-400/40 shadow-md overflow-hidden shrink-0">
-                <BlurUpImage
-                  src="/assets/your-academy-logo.png"
-                  alt="Your Academy"
-                  className="w-full h-full object-contain"
-                  containerClassName="w-full h-full"
-                />
-              </div>
+            <Link to="/" className="flex items-center gap-3 inline-flex group">
+              <img
+                src={isDark ? '/assets/your-academy-symbol-dark.png' : '/assets/your-academy-symbol-light.png'}
+                alt="Your Academy"
+                className="w-11 h-11 object-contain group-hover:scale-105 transition-transform shrink-0 select-none"
+                width="44"
+                height="44"
+              />
               <div>
                 <span className="font-extrabold text-xl text-zinc-950 dark:text-white tracking-tight font-sora block">
                   YOUR ACADEMY

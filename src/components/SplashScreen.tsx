@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -23,6 +24,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const { isRtl } = useLanguage();
+  const { isDark } = useTheme();
 
   // Lock body scroll while splash screen is visible to prevent any layout shifting
   useEffect(() => {
@@ -30,13 +32,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       const originalOverflow = document.body.style.overflow;
       const originalBg = document.body.style.backgroundColor;
       document.body.style.overflow = 'hidden';
-      document.body.style.backgroundColor = '#070E1E';
+      document.body.style.backgroundColor = isDark ? '#070E1E' : '#FAF8F5';
       return () => {
         document.body.style.overflow = originalOverflow;
         document.body.style.backgroundColor = originalBg;
       };
     }
-  }, [isVisible]);
+  }, [isVisible, isDark]);
 
   // Detect reduced-motion preference
   useEffect(() => {
@@ -108,12 +110,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             scale: isReducedMotion ? 1 : 1.03,
             transition: { duration: 0.45, ease: [0.25, 1, 0.5, 1] },
           }}
-          className="fixed inset-0 top-0 left-0 w-screen h-screen min-h-[100dvh] min-w-full z-[99999] flex flex-col items-center justify-center bg-[#070E1E] text-white select-none overflow-hidden"
+          className={`fixed inset-0 top-0 left-0 w-screen h-screen min-h-[100dvh] min-w-full z-[99999] flex flex-col items-center justify-center select-none overflow-hidden ${
+            isDark ? 'bg-[#070E1E] text-white' : 'bg-[#FAF8F5] text-zinc-950'
+          }`}
           id="website-splash-screen"
           style={{
-            backgroundColor: '#070E1E',
-            backgroundImage:
-              'radial-gradient(ellipse at 50% 45%, rgba(242,174,11,0.22) 0%, rgba(242,174,11,0.08) 32%, rgba(7,14,30,0.98) 68%, #070E1E 100%)',
+            backgroundColor: isDark ? '#070E1E' : '#FAF8F5',
+            backgroundImage: isDark
+              ? 'radial-gradient(ellipse at 50% 45%, rgba(242,174,11,0.22) 0%, rgba(242,174,11,0.08) 32%, rgba(7,14,30,0.98) 68%, #070E1E 100%)'
+              : 'radial-gradient(ellipse at 50% 45%, rgba(247,198,47,0.22) 0%, rgba(242,174,11,0.1) 32%, rgba(250,248,245,0.98) 68%, #FAF8F5 100%)',
             transform: 'translateZ(0)',
             willChange: 'opacity, transform',
           }}
@@ -398,7 +403,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 aria-hidden="true"
               />
 
-              {/* Exact Official Logo Image in White Rounded Squircle (100% Locked Original Asset) */}
+              {/* Standalone Official Academy Symbol (No Surrounding Box or Container) */}
               <motion.div
                 initial={
                   isReducedMotion
@@ -411,15 +416,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                   duration: isReducedMotion ? 0.2 : 0.75,
                   ease: [0.16, 1, 0.3, 1],
                 }}
-                className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-[28px] sm:rounded-[36px] bg-white p-3.5 sm:p-4 flex items-center justify-center shadow-[0_0_35px_rgba(242,174,11,0.3)] border-2 border-amber-300/60 overflow-hidden"
+                className="relative w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center"
                 style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
               >
                 <img
-                  src="/assets/your-academy-logo.png"
+                  src={isDark ? '/assets/your-academy-symbol-dark.png' : '/assets/your-academy-symbol-light.png'}
                   alt="Your Academy"
                   width="144"
                   height="144"
-                  className="w-full h-full object-contain select-none pointer-events-none"
+                  className="w-full h-full object-contain select-none pointer-events-none drop-shadow-[0_8px_24px_rgba(242,174,11,0.35)]"
                   loading="eager"
                   decoding="sync"
                 />
@@ -439,7 +444,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 duration: isReducedMotion ? 0.2 : 0.65,
                 ease: [0.16, 1, 0.3, 1],
               }}
-              className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-sora tracking-[0.18em] sm:tracking-[0.24em] uppercase text-white leading-tight"
+              className={`text-2xl sm:text-3xl lg:text-4xl font-extrabold font-sora tracking-[0.18em] sm:tracking-[0.24em] uppercase leading-tight ${
+                isDark ? 'text-white' : 'text-zinc-950'
+              }`}
               style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
             >
               YOUR ACADEMY
@@ -458,7 +465,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 duration: isReducedMotion ? 0.2 : 0.6,
                 ease: [0.16, 1, 0.3, 1],
               }}
-              className="text-sm sm:text-base lg:text-lg font-bold text-[#FFC62A] font-cairo mt-2.5 tracking-wide"
+              className={`text-sm sm:text-base lg:text-lg font-bold font-cairo mt-2.5 tracking-wide ${
+                isDark ? 'text-[#FFC62A]' : 'text-amber-800'
+              }`}
               style={{ transform: 'translateZ(0)', willChange: 'transform, opacity' }}
             >
               طريقك نحو النجاح يبدأ من هنا
@@ -477,11 +486,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
                 duration: isReducedMotion ? 0.2 : 0.55,
                 ease: 'easeOut',
               }}
-              className="mt-2.5 flex items-center justify-center gap-2 text-[11px] sm:text-xs font-semibold text-zinc-300 font-sora tracking-[0.14em] uppercase"
+              className={`mt-2.5 flex items-center justify-center gap-2 text-[11px] sm:text-xs font-semibold font-sora tracking-[0.14em] uppercase ${
+                isDark ? 'text-zinc-300' : 'text-zinc-600'
+              }`}
               style={{ transform: 'translateZ(0)' }}
             >
               <span>YOUR ACADEMY</span>
-              <span className="text-amber-400 font-bold">—</span>
+              <span className="text-amber-500 font-bold">—</span>
               <span>ACADEMY</span>
             </motion.div>
 

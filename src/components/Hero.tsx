@@ -16,6 +16,7 @@ import {
   Users
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface HeroProps {
   onOpenRegister: (program?: string) => void;
@@ -23,6 +24,7 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ onOpenRegister }) => {
   const { t, isRtl, language } = useLanguage();
+  const { isDark } = useTheme();
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -165,20 +167,18 @@ export const Hero: React.FC<HeroProps> = ({ onOpenRegister }) => {
                 
                 {/* Top Poster Header */}
                 <div className="flex items-center justify-between pb-3 sm:pb-5 border-b border-zinc-200 dark:border-zinc-800">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white p-0.5 flex items-center justify-center border border-amber-400/40 shadow-sm overflow-hidden shrink-0">
-                      <img
-                        src="/assets/your-academy-logo.png"
-                        alt="Your Academy"
-                        className="w-full h-full object-contain"
-                        width="36"
-                        height="36"
-                      />
-                    </div>
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src={isDark ? '/assets/your-academy-symbol-dark.png' : '/assets/your-academy-symbol-light.png'}
+                      alt="Your Academy"
+                      className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0 select-none"
+                      width="36"
+                      height="36"
+                    />
                     <div>
                       <h3 className="font-extrabold text-xs sm:text-sm text-zinc-950 dark:text-white font-sora">YOUR ACADEMY</h3>
                       <p className="text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-400 font-bold">
-                        {language === 'ar' ? 'عين الدفلى • البليدة • خميس مليانة' : 'Aïn Defla • Blida • Khemis Miliana'}
+                        {language === 'ar' ? 'عين الدفلى • البليدة • خميس مليانة • العطاف' : 'Aïn Defla • Blida • Khemis Miliana • El Attaf'}
                       </p>
                     </div>
                   </div>

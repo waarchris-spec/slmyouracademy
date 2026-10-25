@@ -16,6 +16,7 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { BlurUpImage } from './BlurUpImage';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface MobileDrawerNavProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
   onOpenIOSGuide,
 }) => {
   const { t, isRtl, language } = useLanguage();
+  const { isDark } = useTheme();
   const isAr = language === 'ar';
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -210,16 +212,13 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
         {/* Top Header with Brand, Theme Toggle & Close Button */}
         <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-[#0B0F17] pt-[max(1rem,env(safe-area-inset-top,0px))]">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-xs border border-amber-400/40 overflow-hidden">
-              <BlurUpImage
-                src="/assets/your-academy-logo.png"
-                alt="Your Academy"
-                className="w-full h-full object-contain"
-                containerClassName="w-full h-full"
-                width={40}
-                height={40}
-              />
-            </div>
+            <img
+              src={isDark ? '/assets/your-academy-symbol-dark.png' : '/assets/your-academy-symbol-light.png'}
+              alt="Your Academy"
+              className="w-9 h-9 object-contain shrink-0 select-none"
+              width="36"
+              height="36"
+            />
             <div className="flex flex-col min-w-0">
               <span className="font-black text-sm text-zinc-950 dark:text-white font-sora truncate leading-tight">
                 YOUR ACADEMY

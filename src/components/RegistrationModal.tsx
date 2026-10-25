@@ -10,6 +10,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface RegistrationModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
   preselectedProgram,
 }) => {
   const { t, isRtl } = useLanguage();
+  const { isDark } = useTheme();
 
   const [formData, setFormData] = useState<RegistrationFormData>({
     fullName: '',
@@ -105,14 +107,13 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
           <div>
             {/* Header */}
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-white p-1 flex items-center justify-center border border-amber-400/40 shadow-lg shrink-0 overflow-hidden">
-                <BlurUpImage
-                  src="/assets/your-academy-logo.png"
-                  alt="Your Academy"
-                  className="w-full h-full object-contain"
-                  containerClassName="w-full h-full"
-                />
-              </div>
+              <img
+                src={isDark ? '/assets/your-academy-symbol-dark.png' : '/assets/your-academy-symbol-light.png'}
+                alt="Your Academy"
+                className="w-13 h-13 object-contain shrink-0 select-none"
+                width="52"
+                height="52"
+              />
               <div className="space-y-1.5">
                 <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-400 text-[11px] font-black">
                   <Sparkles className="w-3 h-3" />

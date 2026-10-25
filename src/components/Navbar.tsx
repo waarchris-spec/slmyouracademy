@@ -24,6 +24,7 @@ import { TopLanguageTicker } from './TopLanguageTicker';
 import { MobileDrawerNav } from './MobileDrawerNav';
 import { IOSPWAExperience } from './IOSPWAExperience';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface NavbarProps {
   onOpenRegister: (program?: string) => void;
@@ -31,6 +32,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenRegister }) => {
   const { t, isRtl, language } = useLanguage();
+  const { isDark } = useTheme();
   const isAr = language === 'ar';
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -162,15 +164,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenRegister }) => {
             id="nav-logo"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-xs border border-amber-400/40 group-hover:scale-105 transition-transform overflow-hidden shrink-0">
-              <img
-                src="/assets/your-academy-logo.png"
-                alt="Your Academy"
-                className="w-full h-full object-contain"
-                width="40"
-                height="40"
-              />
-            </div>
+            <img
+              src={isDark ? '/assets/your-academy-symbol-dark.png' : '/assets/your-academy-symbol-light.png'}
+              alt="Your Academy"
+              className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 object-contain group-hover:scale-105 transition-transform shrink-0 select-none"
+              width="40"
+              height="40"
+            />
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5 xl:gap-2">
                 <span className="font-extrabold text-sm sm:text-base lg:text-lg xl:text-xl text-zinc-950 dark:text-white tracking-tight font-sora leading-tight whitespace-nowrap">
