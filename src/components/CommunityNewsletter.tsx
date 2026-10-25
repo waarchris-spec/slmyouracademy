@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BlurUpImage } from './BlurUpImage';
 import honorsFeaturedPhoto from '../assets/images/regenerated_image_1790868823344.png';
@@ -24,7 +24,9 @@ import {
   Maximize2,
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  Play,
+  Pause,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { ACADEMY_INFO } from '../data/academyData';
@@ -46,7 +48,17 @@ export const CommunityNewsletter: React.FC<CommunityNewsletterProps> = ({ onOpen
 
   // Image section & gallery state
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [direction, setDirection] = useState<number>(1);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
+  const [timerKey, setTimerKey] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Touch gesture tracking for mobile swipe navigation
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   const galleryImages = [
     {
@@ -93,12 +105,110 @@ export const CommunityNewsletter: React.FC<CommunityNewsletterProps> = ({ onOpen
 
   const currentImg = galleryImages[activeImageIndex];
 
-  const handlePrevImage = () => {
+  // Preload gallery photos into browser memory for stutter-free transitions
+  useEffect(() => {
+    galleryImages.forEach((img) => {
+      const preloadImg = new Image();
+      preloadImg.src = img.src;
+      if (img.thumbSrc) {
+        const preloadThumb = new Image();
+        preloadThumb.src = img.thumbSrc;
+      }
+    });
+  }, []);
+
+  // Detect user preference for reduced motion
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener?.('change', handler);
+    return () => mediaQuery.removeEventListener?.('change', handler);
+  }, []);
+
+  const resetAutoplayTimer = useCallback(() => {
+    setTimerKey((k) => k + 1);
+  }, []);
+
+  const handlePrevImage = useCallback(() => {
+    setDirection(-1);
     setActiveImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
+    resetAutoplayTimer();
+  }, [galleryImages.length, resetAutoplayTimer]);
+
+  const handleNextImage = useCallback(() => {
+    setDirection(1);
+    setActiveImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+    resetAutoplayTimer();
+  }, [galleryImages.length, resetAutoplayTimer]);
+
+  const handleSelectImage = useCallback((index: number) => {
+    setDirection(index >= activeImageIndex ? 1 : -1);
+    setActiveImageIndex(index);
+    resetAutoplayTimer();
+  }, [activeImageIndex, resetAutoplayTimer]);
+
+  // Autoplay slideshow: advances every 4.5s; pauses on hover, keyboard focus, manual toggle, lightbox, or reduced motion
+  const isAutoplayActive =
+    !isHovered &&
+    !isFocused &&
+    !isManuallyPaused &&
+    !isLightboxOpen &&
+    !prefersReducedMotion;
+
+  useEffect(() => {
+    if (!isAutoplayActive) return;
+
+    const interval = setInterval(() => {
+      setDirection(1);
+      setActiveImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+    }, 4500);
+
+    return () => clearInterval(interval);
+  }, [isAutoplayActive, timerKey, galleryImages.length]);
+
+  // Touch gesture swipe handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
   };
 
-  const handleNextImage = () => {
-    setActiveImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+
+    // Trigger only if horizontal swipe dominates vertical scroll and exceeds 40px
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      if (deltaX < 0) {
+        // Swiped towards left
+        isRtl ? handlePrevImage() : handleNextImage();
+      } else {
+        // Swiped towards right
+        isRtl ? handleNextImage() : handlePrevImage();
+      }
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  // Gallery container keyboard navigation
+  const handleGalleryKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      isRtl ? handleNextImage() : handlePrevImage();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      isRtl ? handlePrevImage() : handleNextImage();
+    } else if (e.key === ' ') {
+      // Space key toggles play/pause when focused on carousel
+      if (e.target === e.currentTarget) {
+        e.preventDefault();
+        setIsManuallyPaused((prev) => !prev);
+      }
+    }
   };
 
   useEffect(() => {
@@ -114,7 +224,7 @@ export const CommunityNewsletter: React.FC<CommunityNewsletterProps> = ({ onOpen
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isLightboxOpen, isRtl]);
+  }, [isLightboxOpen, isRtl, handleNextImage, handlePrevImage]);
 
   const validateEmail = (val: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
@@ -277,6 +387,7 @@ export const CommunityNewsletter: React.FC<CommunityNewsletterProps> = ({ onOpen
               <div
                 className="pt-4 space-y-3"
                 role="region"
+                aria-roledescription="carousel"
                 aria-label={isRtl ? 'معرض صور وفعاليات الأكاديمية' : 'Academy Visual Life & Gallery'}
               >
                 {/* Image Section Header */}
@@ -298,105 +409,237 @@ export const CommunityNewsletter: React.FC<CommunityNewsletterProps> = ({ onOpen
                     </div>
                   </div>
 
-                  {/* Photo counter badge */}
-                  <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 font-mono">
-                    {activeImageIndex + 1} / {galleryImages.length}
-                  </span>
+                  {/* Slideshow controls & photo counter */}
+                  <div className="flex items-center gap-1.5">
+                    {/* Live Autoplay / Pause Toggle Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsManuallyPaused((prev) => !prev)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700/60 text-zinc-700 dark:text-zinc-300 text-[11px] font-medium transition-colors cursor-pointer"
+                      title={
+                        isManuallyPaused
+                          ? (isRtl ? 'تشغيل العرض التلقائي' : 'Resume auto slideshow')
+                          : (isRtl ? 'إيقاف مؤقت للعرض التلقائي' : 'Pause auto slideshow')
+                      }
+                      aria-label={
+                        isManuallyPaused
+                          ? (isRtl ? 'تشغيل العرض التلقائي' : 'Resume auto slideshow')
+                          : (isRtl ? 'إيقاف مؤقت للعرض التلقائي' : 'Pause auto slideshow')
+                      }
+                    >
+                      {isManuallyPaused ? (
+                        <>
+                          <Play className="w-3 h-3 text-amber-500 fill-amber-500" />
+                          <span className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+                            {isRtl ? 'تشغيل' : 'Play'}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                          </span>
+                          <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                            {isRtl ? 'مباشر' : 'Live'}
+                          </span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Photo counter badge */}
+                    <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 font-mono">
+                      {activeImageIndex + 1} / {galleryImages.length}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Main Featured Photo Box (Targeted selected div enhanced to interactive image showcase) */}
-                <div className="rounded-2xl overflow-hidden border-2 border-amber-500/40 dark:border-amber-400/30 shadow-xl relative group bg-black/5 dark:bg-black/40">
-                  <div
-                    className="relative cursor-pointer"
-                    onClick={() => setIsLightboxOpen(true)}
-                    title={isRtl ? 'انقر لتكبير الصورة في وضع ملء الشاشة' : 'Click to expand image full screen'}
-                  >
-                    <BlurUpImage
-                      key={currentImg.id}
-                      src={currentImg.src}
-                      alt={isRtl ? currentImg.titleAr : currentImg.titleEn}
-                      className="w-full h-52 sm:h-64 md:h-72 object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
-                      aspectRatioClass="aspect-[16/10]"
-                      priority={activeImageIndex === 0}
+                {/* Main Featured Photo Box with Smooth Framer Motion Carousel */}
+                <div
+                  className="rounded-2xl overflow-hidden border-2 border-amber-500/40 dark:border-amber-400/30 shadow-xl relative group bg-black/60 aspect-[16/10] select-none focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  tabIndex={0}
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setIsFocused(false);
+                    }
+                  }}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  onKeyDown={handleGalleryKeyDown}
+                  aria-live="polite"
+                >
+                  {/* Subtle Autoplay Progress Line (Active during auto-advancing) */}
+                  <div className="absolute top-0 inset-x-0 h-1 bg-black/40 z-30 overflow-hidden pointer-events-none">
+                    <motion.div
+                      key={`progress-${activeImageIndex}-${isAutoplayActive}`}
+                      initial={{ width: '0%' }}
+                      animate={{ width: isAutoplayActive ? '100%' : '0%' }}
+                      transition={{
+                        duration: isAutoplayActive ? 4.5 : 0,
+                        ease: 'linear',
+                      }}
+                      className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.6)]"
                     />
+                  </div>
 
-                    {/* Top Scrim Overlay: Badges & Fullscreen Trigger */}
-                    <div className="absolute top-0 inset-x-0 p-3 flex items-center justify-between pointer-events-none z-10 bg-gradient-to-b from-black/65 via-black/25 to-transparent">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-amber-300 border border-amber-500/30 text-[11px] font-bold shadow-sm">
+                  {/* Animated Slide Image using Framer Motion: Crossfade + Subtle Slide + Gentle Scale */}
+                  <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                    <motion.div
+                      key={currentImg.id}
+                      custom={direction}
+                      variants={{
+                        enter: (dir: number) => ({
+                          opacity: 0,
+                          x: prefersReducedMotion ? 0 : (dir > 0 ? 32 : -32),
+                          scale: prefersReducedMotion ? 1 : 1.04,
+                        }),
+                        center: {
+                          opacity: 1,
+                          x: 0,
+                          scale: 1,
+                          transition: {
+                            opacity: { duration: 0.65, ease: [0.25, 1, 0.5, 1] },
+                            x: { duration: 0.65, ease: [0.25, 1, 0.5, 1] },
+                            scale: { duration: 0.75, ease: [0.25, 1, 0.5, 1] },
+                          },
+                        },
+                        exit: (dir: number) => ({
+                          opacity: 0,
+                          x: prefersReducedMotion ? 0 : (dir > 0 ? -32 : 32),
+                          scale: prefersReducedMotion ? 1 : 0.98,
+                          transition: {
+                            opacity: { duration: 0.6, ease: [0.25, 1, 0.5, 1] },
+                            x: { duration: 0.6, ease: [0.25, 1, 0.5, 1] },
+                            scale: { duration: 0.6, ease: [0.25, 1, 0.5, 1] },
+                          },
+                        }),
+                      }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      className="absolute inset-0 w-full h-full cursor-pointer"
+                      onClick={() => setIsLightboxOpen(true)}
+                      title={isRtl ? 'انقر لتكبير الصورة في وضع ملء الشاشة' : 'Click to expand image full screen'}
+                    >
+                      <img
+                        src={currentImg.src}
+                        alt={isRtl ? currentImg.titleAr : currentImg.titleEn}
+                        className="w-full h-full object-cover"
+                        loading={activeImageIndex === 0 ? 'eager' : 'lazy'}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+
+                  {/* Top Scrim Overlay: Badges & Fullscreen Trigger */}
+                  <div className="absolute top-0 inset-x-0 p-3 pt-3.5 flex items-center justify-between pointer-events-none z-20 bg-gradient-to-b from-black/75 via-black/30 to-transparent">
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={currentImg.id}
+                        initial={{ opacity: 0, scale: 0.92 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.92 }}
+                        transition={{ duration: 0.3 }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-amber-300 border border-amber-500/30 text-[11px] font-bold shadow-sm"
+                      >
                         <Sparkles className="w-3 h-3 text-amber-400" />
                         <span>{isRtl ? currentImg.badgeAr : currentImg.badgeEn}</span>
-                      </span>
+                      </motion.span>
+                    </AnimatePresence>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsLightboxOpen(true);
-                        }}
-                        className="pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 hover:bg-amber-500 hover:text-black transition-colors backdrop-blur-md text-white border border-white/20 text-xs font-semibold shadow-sm active:scale-95"
-                        aria-label={isRtl ? 'تكبير الصورة' : 'Expand photo'}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsLightboxOpen(true);
+                      }}
+                      className="pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 hover:bg-amber-500 hover:text-black transition-colors backdrop-blur-md text-white border border-white/20 text-xs font-semibold shadow-sm active:scale-95 cursor-pointer"
+                      aria-label={isRtl ? 'تكبير الصورة' : 'Expand photo'}
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline text-[11px]">{isRtl ? 'تكبير' : 'Full View'}</span>
+                    </button>
+                  </div>
+
+                  {/* Left / Right Carousel Controls */}
+                  <div className="absolute inset-y-0 inset-x-2 flex items-center justify-between pointer-events-none z-20">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        isRtl ? handleNextImage() : handlePrevImage();
+                      }}
+                      className="pointer-events-auto w-9 h-9 rounded-full bg-black/55 hover:bg-amber-500 hover:text-black text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-85 hover:opacity-100 hover:scale-110 shadow-lg active:scale-95 cursor-pointer"
+                      aria-label={isRtl ? 'الصورة التالية' : 'Previous photo'}
+                    >
+                      <ChevronLeft className="w-5 h-5 rtl:rotate-180" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        isRtl ? handlePrevImage() : handleNextImage();
+                      }}
+                      className="pointer-events-auto w-9 h-9 rounded-full bg-black/55 hover:bg-amber-500 hover:text-black text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-85 hover:opacity-100 hover:scale-110 shadow-lg active:scale-95 cursor-pointer"
+                      aria-label={isRtl ? 'الصورة السابقة' : 'Next photo'}
+                    >
+                      <ChevronRight className="w-5 h-5 rtl:rotate-180" />
+                    </button>
+                  </div>
+
+                  {/* Bottom Scrim: Category Tag, Animated Title & Description */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-3.5 sm:p-4 pointer-events-none z-20 flex flex-col justify-end text-start">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentImg.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.32, ease: 'easeOut' }}
+                        className="space-y-0.5"
                       >
-                        <Maximize2 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline text-[11px]">{isRtl ? 'تكبير' : 'Full View'}</span>
-                      </button>
-                    </div>
-
-                    {/* Left / Right Carousel Controls */}
-                    <div className="absolute inset-y-0 inset-x-2 flex items-center justify-between pointer-events-none z-10">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          isRtl ? handleNextImage() : handlePrevImage();
-                        }}
-                        className="pointer-events-auto w-9 h-9 rounded-full bg-black/50 hover:bg-amber-500 hover:text-black text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-85 hover:opacity-100 hover:scale-110 shadow-lg active:scale-95"
-                        aria-label={isRtl ? 'الصورة التالية' : 'Previous photo'}
-                      >
-                        <ChevronLeft className="w-5 h-5 rtl:rotate-180" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          isRtl ? handlePrevImage() : handleNextImage();
-                        }}
-                        className="pointer-events-auto w-9 h-9 rounded-full bg-black/50 hover:bg-amber-500 hover:text-black text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-85 hover:opacity-100 hover:scale-110 shadow-lg active:scale-95"
-                        aria-label={isRtl ? 'الصورة السابقة' : 'Next photo'}
-                      >
-                        <ChevronRight className="w-5 h-5 rtl:rotate-180" />
-                      </button>
-                    </div>
-
-                    {/* Bottom Scrim: Category Tag, Title & Description */}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent p-3.5 sm:p-4 pointer-events-none z-10 flex flex-col justify-end text-start">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded bg-amber-500 text-black text-[10px] font-black uppercase tracking-wider">
-                          {isRtl ? currentImg.categoryAr : currentImg.categoryEn}
-                        </span>
-                      </div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white leading-snug drop-shadow-sm">
-                        {isRtl ? currentImg.titleAr : currentImg.titleEn}
-                      </h4>
-                      <p className="text-[11px] text-zinc-300 font-normal leading-normal mt-0.5 line-clamp-1 drop-shadow-sm">
-                        {isRtl ? currentImg.descAr : currentImg.descEn}
-                      </p>
-                    </div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="px-2 py-0.5 rounded bg-amber-500 text-black text-[10px] font-black uppercase tracking-wider shadow-xs">
+                            {isRtl ? currentImg.categoryAr : currentImg.categoryEn}
+                          </span>
+                          {(isHovered || isFocused) && !isManuallyPaused && (
+                            <span className="text-[10px] text-amber-300/90 bg-black/50 px-2 py-0.5 rounded backdrop-blur-xs font-medium">
+                              {isRtl ? 'إيقاف مؤقت (مرر الماوس)' : 'Paused on hover'}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white leading-snug drop-shadow-md">
+                          {isRtl ? currentImg.titleAr : currentImg.titleEn}
+                        </h4>
+                        <p className="text-[11px] text-zinc-300 font-normal leading-normal line-clamp-1 drop-shadow-sm">
+                          {isRtl ? currentImg.descAr : currentImg.descEn}
+                        </p>
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
                 </div>
 
                 {/* Thumbnails Navigation Selector Strip */}
-                <div className="grid grid-cols-3 gap-2 pt-1">
+                <div
+                  className="grid grid-cols-3 gap-2 pt-1"
+                  role="tablist"
+                  aria-label={isRtl ? 'صور المعرض' : 'Gallery thumbnails'}
+                >
                   {galleryImages.map((img, idx) => {
                     const isActive = idx === activeImageIndex;
                     return (
                       <button
                         key={img.id}
                         type="button"
-                        onClick={() => setActiveImageIndex(idx)}
-                        className={`relative rounded-xl overflow-hidden aspect-[16/10] border-2 transition-all duration-200 text-start group/thumb ${
+                        role="tab"
+                        aria-selected={isActive}
+                        onClick={() => handleSelectImage(idx)}
+                        className={`relative rounded-xl overflow-hidden aspect-[16/10] border-2 transition-all duration-300 text-start group/thumb cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                           isActive
-                            ? 'border-amber-500 ring-2 ring-amber-400/40 shadow-md scale-[1.02]'
+                            ? 'border-amber-500 ring-2 ring-amber-400/40 shadow-lg scale-[1.02]'
                             : 'border-zinc-200 dark:border-zinc-800 opacity-70 hover:opacity-100 hover:border-amber-400/60'
                         }`}
                         aria-label={`View photo ${idx + 1}: ${isRtl ? img.titleAr : img.titleEn}`}
@@ -404,21 +647,23 @@ export const CommunityNewsletter: React.FC<CommunityNewsletterProps> = ({ onOpen
                         <img
                           src={img.thumbSrc || img.src}
                           alt=""
-                          className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300"
+                          className={`w-full h-full object-cover transition-transform duration-500 ${
+                            isActive ? 'scale-105' : 'group-hover/thumb:scale-105'
+                          }`}
                           loading="lazy"
                         />
                         <div
-                          className={`absolute inset-0 transition-colors ${
+                          className={`absolute inset-0 transition-colors duration-300 ${
                             isActive
-                              ? 'bg-amber-500/10'
+                              ? 'bg-amber-500/15'
                               : 'bg-black/30 group-hover/thumb:bg-transparent'
                           }`}
                         />
                         <div className="absolute bottom-1 inset-x-1 pointer-events-none">
                           <span
-                            className={`block truncate text-[9px] sm:text-[10px] font-bold px-1 py-0.5 rounded ${
+                            className={`block truncate text-[9px] sm:text-[10px] font-bold px-1 py-0.5 rounded transition-colors ${
                               isActive
-                                ? 'bg-amber-500 text-black font-extrabold'
+                                ? 'bg-amber-500 text-black font-extrabold shadow-xs'
                                 : 'bg-black/75 text-zinc-200 backdrop-blur-xs'
                             }`}
                           >

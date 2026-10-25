@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { CommunityNewsletter } from '../components/CommunityNewsletter';
 import { SocialMediaSection } from '../components/SocialMediaSection';
@@ -23,6 +23,7 @@ import {
   Check,
   PhoneCall,
   ShieldCheck,
+  X,
 } from 'lucide-react';
 
 const FacebookIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -55,6 +56,25 @@ export const BranchesContactPage: React.FC<BranchesContactPageProps> = ({ onOpen
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
   const [copiedAddressId, setCopiedAddressId] = useState<string | null>(null);
   const [activeBranchFilter, setActiveBranchFilter] = useState<string>('all');
+  const [showBranchCallModal, setShowBranchCallModal] = useState(false);
+  const branchCallModalRef = useRef<HTMLDivElement>(null);
+
+  // Close modal on Escape key and lock body scroll
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowBranchCallModal(false);
+      }
+    };
+    if (showBranchCallModal) {
+      window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [showBranchCallModal]);
 
   // Contact Inquiry Form State
   const [contactForm, setContactForm] = useState({
@@ -221,17 +241,127 @@ export const BranchesContactPage: React.FC<BranchesContactPageProps> = ({ onOpen
               <Sparkles className="w-4 h-4 fill-black" />
               <span>{isAr ? 'سجل في أقرب فرع إليك' : 'Register at Your Nearest Branch'}</span>
             </button>
-            <a
-              href="tel:0552404059"
-              className="px-5 py-3.5 rounded-2xl bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white font-bold text-sm border border-zinc-300 dark:border-zinc-700 transition-colors flex items-center gap-2"
-              dir="ltr"
+            <button
+              type="button"
+              onClick={() => setShowBranchCallModal(true)}
+              className="px-5 py-3.5 rounded-2xl bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white font-bold text-sm border border-zinc-300 dark:border-zinc-700 transition-all flex items-center gap-2 shadow-xs active:scale-95 cursor-pointer"
+              id="hero-call-branch-btn"
+              aria-haspopup="dialog"
+              aria-expanded={showBranchCallModal}
             >
-              <PhoneCall className="w-4 h-4 text-amber-500" />
-              <span>0552 40 40 59</span>
-            </a>
+              <PhoneCall className="w-4 h-4 text-amber-500 shrink-0" />
+              <span>{isAr ? 'اتصل بأحد فروعنا' : 'Call a Branch'}</span>
+            </button>
           </div>
         }
       />
+
+      {/* Branch Call Selector Modal (Listing all 4 branches with direct tel: links) */}
+      {showBranchCallModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="branch-call-modal-title"
+        >
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowBranchCallModal(false)}
+            aria-hidden="true"
+          />
+
+          {/* Modal Card */}
+          <div
+            ref={branchCallModalRef}
+            className="relative z-10 w-full max-w-lg bg-white dark:bg-[#0E131F] rounded-3xl border border-zinc-200 dark:border-zinc-800 p-5 sm:p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 text-start max-h-[90vh] overflow-y-auto"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                  <PhoneCall className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3
+                    id="branch-call-modal-title"
+                    className="text-base font-black text-zinc-950 dark:text-white leading-tight"
+                  >
+                    {isAr ? 'اتصل بأحد فروع الأكاديمية' : 'Call an Academy Branch'}
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    {isAr
+                      ? 'اختر الفرع الأقرب إليك للتواصل المباشر مع إدارة الاستقبال'
+                      : 'Choose your nearest branch for direct reception contact'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowBranchCallModal(false)}
+                className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center justify-center transition-colors cursor-pointer"
+                aria-label={isAr ? 'إغلاق النافذة' : 'Close modal'}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* List of 4 Branches */}
+            <div className="space-y-2.5">
+              {branches.map((b) => (
+                <div
+                  key={b.id}
+                  className="p-3 sm:p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-amber-400/50 flex items-center justify-between gap-3 transition-all"
+                >
+                  <div className="space-y-0.5 flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-black text-zinc-950 dark:text-white">
+                        {isAr ? b.nameAr : b.nameEn}
+                      </span>
+                      {b.isMain ? (
+                        <span className="px-1.5 py-0.5 bg-amber-500 text-black text-[9px] font-black rounded shrink-0">
+                          {isAr ? 'الرئيسي' : 'HQ'}
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[9px] font-bold rounded shrink-0">
+                          {isAr ? 'فرع معتمد' : 'Branch'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1">
+                      {isAr ? b.cityAr : b.cityEn}
+                    </p>
+                  </div>
+
+                  {/* Direct Call Button */}
+                  <a
+                    href={b.telLink}
+                    className="px-3.5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-black font-black text-xs shrink-0 flex items-center gap-1.5 font-sora shadow-xs active:scale-95 transition-transform"
+                    dir="ltr"
+                    title={`${isAr ? 'اتصال مباشر:' : 'Call:'} ${b.phone}`}
+                    aria-label={`${isAr ? 'اتصال بـ' : 'Call'} ${isAr ? b.nameAr : b.nameEn}: ${b.phone}`}
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>{b.phone}</span>
+                  </a>
+                </div>
+              ))}
+            </div>
+
+            {/* Note & Hours */}
+            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>{isAr ? 'السبت - الخميس: 08:30 إلى 18:00' : 'Sat - Thu: 08:30 to 18:00'}</span>
+              </div>
+              <span className="font-semibold text-amber-700 dark:text-amber-400">
+                4 {isAr ? 'فروع رسمية' : 'Official Branches'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2. Branch Filter & Fast Selector Ribbon */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

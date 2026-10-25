@@ -16,50 +16,50 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   if (variant === 'mobile') {
     return (
       <div
-        className={`p-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 space-y-2 text-right ${className}`}
+        className={`w-full p-2.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 space-y-2 ${className}`}
         role="region"
-        aria-label="اختيار لغة الموقع / Website Language"
+        aria-label={isRtl ? 'اختيار لغة الموقع' : 'Website Language'}
         id="mobile-language-switcher"
       >
         <div className="flex items-center justify-between px-1 text-xs font-bold text-zinc-600 dark:text-zinc-400">
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-            <span>{isRtl ? 'لغة الواجهة' : 'Interface Language'}</span>
+          <div className="flex items-center gap-1.5">
+            <Globe className="w-3.5 h-3.5 text-amber-500" />
+            <span>{isRtl ? 'لغة الواجهة' : 'Language'}</span>
           </div>
-          <span className="text-[11px] text-amber-700 dark:text-amber-400 font-sora font-semibold uppercase">
+          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-bold">
             {language === 'ar' ? 'العربية' : 'English'}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 p-1 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <div className="grid grid-cols-2 gap-1.5 p-1 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200/80 dark:border-zinc-800">
           <button
             type="button"
             onClick={() => setLanguage('ar')}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+            className={`min-h-[38px] py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               language === 'ar'
-                ? 'bg-amber-400 text-black shadow-sm font-black'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                ? 'bg-amber-400 text-zinc-950 font-black shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white'
             }`}
             aria-pressed={language === 'ar'}
             id="mobile-lang-ar"
           >
-            {language === 'ar' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-            <span>العربية (AR)</span>
+            {language === 'ar' && <Check className="w-3.5 h-3.5 stroke-[2.5]" />}
+            <span>العربية</span>
           </button>
 
           <button
             type="button"
             onClick={() => setLanguage('en')}
-            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 font-sora ${
+            className={`min-h-[38px] py-1.5 px-3 rounded-lg text-xs font-bold font-sora transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               language === 'en'
-                ? 'bg-amber-400 text-black shadow-sm font-black'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                ? 'bg-amber-400 text-zinc-950 font-black shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white'
             }`}
             aria-pressed={language === 'en'}
             id="mobile-lang-en"
           >
-            {language === 'en' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-            <span>English (EN)</span>
+            {language === 'en' && <Check className="w-3.5 h-3.5 stroke-[2.5]" />}
+            <span>English</span>
           </button>
         </div>
       </div>

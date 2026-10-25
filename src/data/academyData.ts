@@ -189,14 +189,49 @@ export const ACADEMY_PRICING = {
   },
 };
 
+export const BRANCH_CONTACT_NUMBERS = [
+  {
+    branchId: 'ain-defla',
+    branchNameAr: 'فرع عين الدفلى — الرئيسي',
+    branchNameEn: 'Aïn Defla — Main Branch',
+    phone: '0552 40 40 59',
+    telLink: 'tel:+213552404059',
+    isMain: true,
+  },
+  {
+    branchId: 'blida',
+    branchNameAr: 'فرع البليدة',
+    branchNameEn: 'Blida Branch',
+    phone: '0560 40 40 00',
+    telLink: 'tel:+213560404000',
+    isMain: false,
+  },
+  {
+    branchId: 'khemis-miliana',
+    branchNameAr: 'فرع خميس مليانة',
+    branchNameEn: 'Khemis Miliana Branch',
+    phone: '0551 40 40 59',
+    telLink: 'tel:+213551404059',
+    isMain: false,
+  },
+  {
+    branchId: 'el-attaf',
+    branchNameAr: 'فرع العطاف',
+    branchNameEn: 'El Attaf Branch',
+    phone: '0670 40 66 59',
+    telLink: 'tel:+213670406659',
+    isMain: false,
+  },
+];
+
 export const ACADEMY_INFO: ContactInfo = {
   academyNameAr: 'أكاديمية Your Academy',
   academyNameEn: 'YOUR ACADEMY',
   slogan: 'طريقك نحو النجاح يبدأ من هنا',
-  locationName: 'عين الدفلى — الرئيسي | البليدة',
-  locationFull: 'فرع عين الدفلى (الرئيسي): حي الإخوة شوال، طريق مسجد مالك ابن أنس (0552 40 40 59) • فرع البليدة: 09000 (0560 40 40 00)',
-  cityState: 'عين الدفلى (الرئيسي) + البليدة',
-  phones: ['0552 40 40 59', '0560 40 40 00'],
+  locationName: 'عين الدفلى (الرئيسي) • البليدة • خميس مليانة • العطاف',
+  locationFull: 'فرع عين الدفلى (الرئيسي): 0552 40 40 59 • فرع البليدة: 0560 40 40 00 • فرع خميس مليانة: 0551 40 40 59 • فرع العطاف: 0670 40 66 59',
+  cityState: 'عين الدفلى • البليدة • خميس مليانة • العطاف',
+  phones: ['0552 40 40 59', '0560 40 40 00', '0551 40 40 59', '0670 40 66 59'],
   email: 'youracademykn@gmail.com',
   startDateCampaign: `بداية البرنامج الدراسي يوم ${academyCampaign.startDate}`,
   academicYear: `Open For ${academyCampaign.academicYear}`,

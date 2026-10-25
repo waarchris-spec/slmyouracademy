@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ACADEMY_INFO, CAMPAIGN_MOTTO } from '../data/academyData';
+import { ACADEMY_INFO, CAMPAIGN_MOTTO, BRANCH_CONTACT_NUMBERS } from '../data/academyData';
 import { Phone, MapPin, Mail } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -251,22 +251,39 @@ export const Footer: React.FC<FooterProps> = ({ onOpenRegister }) => {
               </div>
             </div>
             
-            <div className="space-y-2.5 text-xs pt-1">
-              <div className="space-y-1">
-                <span className="text-zinc-500 block text-[11px] font-semibold">{t.footer.officialPhones}</span>
-                {ACADEMY_INFO.phones.map((phone) => (
-                  <a
-                    key={phone}
-                    href={`tel:${phone}`}
-                    className="flex items-center gap-2 text-zinc-900 dark:text-zinc-200 hover:text-amber-600 dark:hover:text-amber-400 font-bold"
-                    dir="ltr"
-                  >
-                    <Phone className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
-                    <span>{phone}</span>
-                  </a>
-                ))}
+            {/* Official Contact Numbers Section for All 4 Branches */}
+            <div className="space-y-3 pt-2 text-xs">
+              <div className="space-y-2">
+                <span className="text-zinc-950 dark:text-white block text-xs font-black tracking-wide">
+                  {language === 'ar' ? 'أرقام الاتصال الرسمية' : t.footer.officialPhones}
+                </span>
+
+                <div className="space-y-1.5">
+                  {BRANCH_CONTACT_NUMBERS.map((b) => (
+                    <a
+                      key={b.branchId}
+                      href={b.telLink}
+                      className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-amber-400/60 dark:hover:border-amber-400/60 flex items-center justify-between gap-2 shadow-xs transition-all group active:scale-[0.99] block"
+                      title={`${language === 'ar' ? 'اتصال مباشر:' : 'Call:'} ${b.phone}`}
+                      aria-label={`${language === 'ar' ? 'اتصال بـ' : 'Call'} ${language === 'ar' ? b.branchNameAr : b.branchNameEn}: ${b.phone}`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-6 h-6 rounded-lg bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                          <Phone className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="font-bold text-zinc-950 dark:text-white truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                          {language === 'ar' ? b.branchNameAr : b.branchNameEn}
+                        </span>
+                      </div>
+                      <span className="font-bold text-amber-700 dark:text-amber-400 font-sora shrink-0 text-[11px] tracking-tight" dir="ltr">
+                        {b.phone}
+                      </span>
+                    </a>
+                  ))}
+                </div>
               </div>
 
+              {/* Email information */}
               <div className="pt-1 flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
                 <Mail className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0" />
                 <a href={`mailto:${ACADEMY_INFO.email}`} className="hover:text-amber-600 dark:hover:text-amber-400 font-medium" dir="ltr">
@@ -278,7 +295,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenRegister }) => {
             <div className="pt-1">
               <button
                 onClick={onOpenRegister}
-                className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition-colors shadow"
+                className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition-colors shadow-xs"
               >
                 {t.footer.reserveNowBtn}
               </button>

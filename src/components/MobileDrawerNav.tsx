@@ -38,16 +38,16 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
 
   const navLinks = [
     { name: isRtl ? 'الرئيسية' : t.nav.home, path: '/' },
-    { name: isRtl ? 'اللغات' : t.nav.languages, path: '/languages' },
-    { name: isRtl ? 'المناهج والكتب' : (language === 'ar' ? 'المناهج' : 'Books & Curriculum'), path: '/books' },
-    { name: isRtl ? 'الدعم المدرسي' : t.nav.academic, path: '/academic-support' },
     {
       name: isRtl ? 'الفروع والتواصل' : 'Branches & Contact',
       path: '/branches-contact',
       isFeatured: true,
     },
+    { name: isRtl ? 'برامج اللغات' : (isAr ? 'اللغات' : 'Language Programs'), path: '/languages' },
+    { name: isRtl ? 'المناهج والكتب' : (language === 'ar' ? 'المناهج' : 'Books & Curriculum'), path: '/books' },
+    { name: isRtl ? 'الدعم المدرسي' : t.nav.academic, path: '/academic-support' },
     {
-      name: isRtl ? 'الموارد والبرامج الأكاديمية' : 'Academic Resources',
+      name: isRtl ? 'الموارد الأكاديمية' : 'Academic Resources',
       path: '/resources',
     },
     {
@@ -199,18 +199,18 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
         aria-label={isRtl ? 'قائمة التصفح الرئيسية' : 'Mobile Navigation Menu'}
         className={`fixed inset-y-0 ${
           isRtl ? 'right-0' : 'left-0'
-        } w-full max-w-[340px] sm:max-w-sm bg-white dark:bg-[#0B0F17] shadow-2xl border-l border-r border-amber-500/25 flex flex-col justify-between transform transition-transform duration-300 ease-out overflow-y-auto overscroll-contain ${
+        } w-full max-w-[340px] sm:max-w-sm bg-white dark:bg-[#0B0F17] shadow-2xl border-l border-r border-zinc-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden transform transition-transform duration-300 ease-out ${
           isOpen
             ? 'translate-x-0'
             : isRtl
             ? 'translate-x-full'
             : '-translate-x-full'
-        } pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]`}
+        }`}
       >
-        {/* Top Header */}
-        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+        {/* Top Header with Brand, Theme Toggle & Close Button */}
+        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white dark:bg-[#0B0F17] pt-[max(1rem,env(safe-area-inset-top,0px))]">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm border border-amber-400/40 overflow-hidden">
+            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-xs border border-amber-400/40 overflow-hidden">
               <BlurUpImage
                 src="/assets/your-academy-logo.png"
                 alt="Your Academy"
@@ -230,69 +230,85 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
             </div>
           </div>
 
-          <button
-            ref={closeButtonRef}
-            onClick={onClose}
-            className="min-h-[44px] min-w-[44px] rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center justify-center transition-colors active:scale-95"
-            aria-label={isRtl ? 'إغلاق القائمة' : 'Close navigation menu'}
-          >
-            <X className="w-5 h-5 stroke-[2.5]" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <ThemeToggle variant="icon" />
+            <button
+              ref={closeButtonRef}
+              onClick={onClose}
+              className="h-10 w-10 min-h-[40px] min-w-[40px] rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center transition-colors active:scale-95 cursor-pointer"
+              aria-label={isRtl ? 'إغلاق القائمة' : 'Close navigation menu'}
+            >
+              <X className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          </div>
         </div>
 
-        {/* Scrollable Body Content */}
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 text-start">
-          
-          {/* Quick Language & Theme Controls (Min 44px touch targets) */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="p-1 bg-zinc-100 dark:bg-zinc-900 rounded-xl flex items-center justify-center min-h-[44px]">
-              <LanguageSwitcher variant="mobile" />
-            </div>
-            <div className="p-1 bg-zinc-100 dark:bg-zinc-900 rounded-xl flex items-center justify-center min-h-[44px]">
-              <ThemeToggle variant="menu" />
-            </div>
-          </div>
+        {/* Independently Scrollable Body Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3.5 space-y-4 text-start pb-6">
+          {/* Quick Language Segmented Control */}
+          <LanguageSwitcher variant="mobile" />
 
-          {/* Navigation Links (Min 48px touch targets) */}
-          <nav aria-label="Navigation links" className="space-y-1">
+          {/* Navigation Links (Consistent 46px height, subtle active state, aligned Arabic text) */}
+          <nav aria-label={isRtl ? 'روابط التصفح' : 'Navigation links'} className="space-y-1">
             {navLinks.map((link) => (
               <NavLink
                 key={link.path}
                 to={link.path}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `min-h-[48px] px-3.5 py-3 rounded-xl flex items-center justify-between text-sm font-bold transition-all active:scale-[0.98] ${
+                  `group min-h-[46px] h-[46px] px-3.5 rounded-xl flex items-center justify-between text-sm transition-all active:scale-[0.98] ${
                     isActive
-                      ? 'bg-amber-500 text-black font-black border border-amber-600 shadow-sm ring-2 ring-amber-500/30'
+                      ? 'bg-amber-500/15 dark:bg-amber-500/20 text-amber-950 dark:text-amber-300 font-extrabold border border-amber-500/30 dark:border-amber-400/30 shadow-xs'
                       : (link as any).isFeatured
-                      ? 'bg-amber-400/25 dark:bg-amber-500/20 text-zinc-950 dark:text-amber-300 font-extrabold border border-amber-500/40 shadow-xs'
-                      : 'text-zinc-900 dark:text-zinc-100 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 dark:hover:bg-amber-500/15'
+                      ? 'bg-amber-400/10 dark:bg-amber-500/10 text-amber-900 dark:text-amber-300 font-bold border border-amber-500/25'
+                      : 'text-zinc-800 dark:text-zinc-200 font-semibold hover:text-amber-600 dark:hover:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 active:bg-zinc-200/80 dark:active:bg-zinc-800 border border-transparent'
                   }`
                 }
               >
-                <div className="flex items-center gap-2">
-                  {(link as any).isFeatured && (
-                    <span className="relative flex h-2 w-2 shrink-0">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75 motion-reduce:hidden" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600 dark:bg-amber-400" />
-                    </span>
-                  )}
-                  {(link as any).isFeatured && (
-                    <MapPin className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                  )}
-                  <span>{link.name}</span>
-                </div>
-                {isRtl ? (
-                  <ChevronLeft className="w-4 h-4 text-zinc-400 shrink-0" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
+                {({ isActive }) => (
+                  <>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {/* Distinct active leading indicator or featured dot */}
+                      {isActive ? (
+                        <span className="w-1.5 h-4.5 rounded-full bg-amber-500 shrink-0" />
+                      ) : (link as any).isFeatured ? (
+                        <span className="relative flex h-2 w-2 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75 motion-reduce:hidden" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-600 dark:bg-amber-400" />
+                        </span>
+                      ) : null}
+
+                      {(link as any).isFeatured && (
+                        <MapPin className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                      )}
+                      <span className="truncate">{link.name}</span>
+                    </div>
+
+                    {isRtl ? (
+                      <ChevronLeft
+                        className={`w-4 h-4 shrink-0 transition-transform ${
+                          isActive
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-zinc-400 group-hover:-translate-x-0.5 group-hover:text-amber-600 dark:group-hover:text-amber-400'
+                        }`}
+                      />
+                    ) : (
+                      <ChevronRight
+                        className={`w-4 h-4 shrink-0 transition-transform ${
+                          isActive
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-zinc-400 group-hover:translate-x-0.5 group-hover:text-amber-600 dark:group-hover:text-amber-400'
+                        }`}
+                      />
+                    )}
+                  </>
                 )}
               </NavLink>
             ))}
           </nav>
 
           {/* Dedicated Branch Shortcuts Box */}
-          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/90 border border-amber-500/30 dark:border-amber-500/20 space-y-2.5">
+          <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/80 border border-amber-500/25 space-y-2.5">
             <div className="flex items-center justify-between">
               <NavLink
                 to="/branches-contact"
@@ -309,7 +325,7 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
               {branchShortcuts.map((b) => (
                 <div
                   key={b.name}
-                  className="p-3 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2.5 shadow-sm"
+                  className="p-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 shadow-xs"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
@@ -327,13 +343,13 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
                     </p>
                   </div>
 
-                  {/* Dual Action: Map & Call (Min 44x44px touch targets) */}
+                  {/* Dual Action: Map & Call (Min 40x40px touch targets) */}
                   <div className="flex items-center gap-1.5 shrink-0">
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.exactAddress)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-colors active:scale-95"
+                      className="min-h-[40px] min-w-[40px] h-10 w-10 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-amber-600 dark:text-amber-400 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center transition-colors active:scale-95"
                       title={isRtl ? 'عرض على الخريطة' : 'View on Google Maps'}
                       aria-label={`${b.name} - Google Maps`}
                     >
@@ -342,7 +358,7 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
 
                     <a
                       href={`tel:${b.phone.replace(/\s/g, '')}`}
-                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-amber-400/25 hover:bg-amber-400 text-amber-800 dark:text-amber-300 hover:text-black flex items-center justify-center transition-colors active:scale-95"
+                      className="min-h-[40px] min-w-[40px] h-10 w-10 rounded-lg bg-amber-400/20 hover:bg-amber-400 text-amber-800 dark:text-amber-300 hover:text-black border border-amber-400/30 flex items-center justify-center transition-colors active:scale-95"
                       title={b.phone}
                       aria-label={`${isRtl ? 'اتصال بـ' : 'Call'} ${b.name}`}
                     >
@@ -361,59 +377,90 @@ export const MobileDrawerNav: React.FC<MobileDrawerNavProps> = ({
                 onClose();
                 onOpenIOSGuide();
               }}
-              className="min-h-[44px] py-2.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+              className="min-h-[44px] h-11 py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/30 font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
               id="mobile-drawer-ios-install"
-              aria-label={isRtl ? 'تثبيت الأكاديمية على الآيفون' : 'Add to iPhone Home Screen'}
+              aria-label={isRtl ? 'تثبيت الأكاديمية كـ تطبيق' : 'Add to Home Screen'}
             >
               <Smartphone className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>{isRtl ? 'تثبيت كـ تطبيق' : 'Install App'}</span>
+              <span className="truncate">{isRtl ? 'تثبيت كـ تطبيق' : 'Install App'}</span>
             </button>
 
             <button
               onClick={handleShare}
-              className="min-h-[44px] py-2.5 px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-700 font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+              className="min-h-[44px] h-11 py-2 px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700 font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
               id="mobile-drawer-share"
               aria-label={isRtl ? 'مشاركة الأكاديمية' : 'Share Academy'}
             >
               <Share2 className="w-4 h-4 text-blue-500 shrink-0" />
-              <span>{isRtl ? 'مشاركة' : 'Share'}</span>
+              <span className="truncate">{isRtl ? 'مشاركة' : 'Share'}</span>
             </button>
           </div>
-
         </div>
 
-        {/* Bottom Primary Actions */}
-        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5 shrink-0 bg-white dark:bg-[#0B0F17]">
-          {/* Main Register CTA (Min 48px touch target) */}
+        {/* Bottom Action Bar: Fixed Footer in Drawer with Safe-Area, never obscures content */}
+        <div className="p-3.5 sm:p-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2 shrink-0 bg-white dark:bg-[#0B0F17] pb-[max(0.85rem,env(safe-area-inset-bottom,0px))] shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+          {/* Main Register CTA: Full width, prominent yellow/orange, centered text & icon, never overlaps */}
           <button
             onClick={() => {
               onClose();
               onOpenRegister();
             }}
-            className="w-full min-h-[48px] py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-black font-black text-sm text-center shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
+            className="w-full h-11 min-h-[44px] px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:brightness-105 active:scale-[0.98] text-zinc-950 font-black text-sm flex items-center justify-center gap-2 border border-amber-300/60 dark:border-amber-300/40 shadow-md shadow-amber-500/25 transition-all cursor-pointer"
             id="mobile-drawer-register"
           >
-            <Sparkles className="w-4 h-4 fill-black shrink-0" />
+            <Sparkles className="w-4 h-4 fill-zinc-950 shrink-0" />
             <span>{t.common.registerNow}</span>
-            {isRtl ? <ChevronLeft className="w-4 h-4 shrink-0" /> : <ChevronRight className="w-4 h-4 shrink-0" />}
+            {isRtl ? (
+              <ChevronLeft className="w-4 h-4 shrink-0 opacity-80" />
+            ) : (
+              <ChevronRight className="w-4 h-4 shrink-0 opacity-80" />
+            )}
           </button>
 
-          {/* Dual Direct Branch Calls */}
+          {/* 4 Branch Call Buttons: 2-column x 2-row grid */}
           <div className="grid grid-cols-2 gap-2">
+            {/* Row 1, Col 1: Aïn Defla — عين الدفلى */}
             <a
-              href={`tel:${ACADEMY_INFO.phones[0]}`}
-              className="min-h-[44px] py-2.5 px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-300 dark:border-zinc-700 active:scale-95 transition-transform"
+              href="tel:0552404059"
+              className="h-10 min-h-[40px] px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-200 dark:border-zinc-700/80 active:scale-95 transition-all shadow-xs"
+              aria-label={isRtl ? 'اتصال بفرع عين الدفلى: 0552 40 40 59' : 'Call Aïn Defla branch: 0552 40 40 59'}
+              title="0552 40 40 59"
             >
               <Phone className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span className="truncate">{isRtl ? 'عين الدفلى' : 'Aïn Defla'}</span>
             </a>
 
+            {/* Row 1, Col 2: Blida — البليدة */}
             <a
-              href="tel:0551404059"
-              className="min-h-[44px] py-2.5 px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-300 dark:border-zinc-700 active:scale-95 transition-transform"
+              href="tel:0560404000"
+              className="h-10 min-h-[40px] px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-200 dark:border-zinc-700/80 active:scale-95 transition-all shadow-xs"
+              aria-label={isRtl ? 'اتصال بفرع البليدة: 0560 40 40 00' : 'Call Blida branch: 0560 40 40 00'}
+              title="0560 40 40 00"
             >
               <Phone className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span className="truncate">{isRtl ? 'خميس مليانة' : 'Kh. Miliana'}</span>
+              <span className="truncate">{isRtl ? 'البليدة' : 'Blida'}</span>
+            </a>
+
+            {/* Row 2, Col 1: Khemis Miliana — خميس مليانة */}
+            <a
+              href="tel:0551404059"
+              className="h-10 min-h-[40px] px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-200 dark:border-zinc-700/80 active:scale-95 transition-all shadow-xs"
+              aria-label={isRtl ? 'اتصال بفرع خميس مليانة: 0551 40 40 59' : 'Call Khemis Miliana branch: 0551 40 40 59'}
+              title="0551 40 40 59"
+            >
+              <Phone className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="truncate">{isRtl ? 'خميس مليانة' : 'Khemis Miliana'}</span>
+            </a>
+
+            {/* Row 2, Col 2: El Attaf — العطاف */}
+            <a
+              href="tel:0670406659"
+              className="h-10 min-h-[40px] px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 active:bg-zinc-300 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-200 dark:border-zinc-700/80 active:scale-95 transition-all shadow-xs"
+              aria-label={isRtl ? 'اتصال بفرع العطاف: 0670 40 66 59' : 'Call El Attaf branch: 0670 40 66 59'}
+              title="0670 40 66 59"
+            >
+              <Phone className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="truncate">{isRtl ? 'العطاف' : 'El Attaf'}</span>
             </a>
           </div>
         </div>
